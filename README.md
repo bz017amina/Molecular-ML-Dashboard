@@ -11,7 +11,7 @@ This project integrates **Machine Learning**, **RDKit**, and **NVIDIA MolMIM** t
 The following poster presents the complete project, including the problem statement, objectives, machine learning pipeline, experimental results, chemical space exploration, and the developed web application.
 
 <p align="center">
-  <img src="images/poster.png" width="900">
+  <img src="images/Poster.png" width="900">
 </p>
 
 ---
@@ -59,7 +59,7 @@ After inference, the dashboard displays the predicted molecular properties, the 
 
 **Amina Bouazza**
 
-Master's in Artificial Intelligence
+Master's in Artificial Intelligence (DSBD & IA)
 
 Faculty of Sciences Ben M'Sick
 
