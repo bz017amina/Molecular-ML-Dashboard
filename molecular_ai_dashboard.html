@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MolecularAI — Drug Discovery Platform</title>
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --bg2: #0f1524;
+    --bg3: #151c30;
+    --card: #131929;
+    --border: rgba(99,130,255,0.13);
+    --border2: rgba(99,130,255,0.22);
+    --blue: #6382ff;
+    --blue-dim: rgba(99,130,255,0.12);
+    --teal: #1de9b6;
+    --teal-dim: rgba(29,233,182,0.10);
+    --amber: #ffb830;
+    --amber-dim: rgba(255,184,48,0.10);
+    --red: #ff4d6a;
+    --red-dim: rgba(255,77,106,0.10);
+    --purple: #a78bfa;
+    --purple-dim: rgba(167,139,250,0.10);
+    --text: #e8eaf6;
+    --text2: #8892b0;
+    --text3: #4a5578;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 14px;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── SIDEBAR ─────────────────────────────────────────────── */
+  .sidebar {
+    position: fixed;
+    left: 0; top: 0; bottom: 0;
+    width: 220px;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+    padding: 0 0 16px;
+  }
+
+  .sidebar-logo {
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 8px;
+  }
+
+  .logo-mark {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+
+  .logo-hex {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: #fff;
+  }
+
+  .logo-text { font-size: 15px; font-weight: 700; letter-spacing: -.3px; color: var(--text); }
+  .logo-sub { font-size: 10px; color: var(--text3); letter-spacing: .8px; text-transform: uppercase; margin-left: 42px; }
+
+  .nav-group { padding: 0 8px; }
+  .nav-label {
+    font-size: 10px; letter-spacing: .9px; text-transform: uppercase;
+    color: var(--text3); padding: 10px 12px 6px;
+  }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 12px; border-radius: var(--radius-sm);
+    cursor: pointer; color: var(--text2);
+    transition: all .15s; font-size: 13px; font-weight: 500;
+    border: none; background: none; width: 100%; text-align: left;
+  }
+
+  .nav-item:hover { background: var(--blue-dim); color: var(--text); }
+  .nav-item.active { background: var(--blue-dim); color: var(--blue); }
+
+  .nav-icon { font-size: 16px; opacity: .7; flex-shrink: 0; }
+  .nav-item.active .nav-icon { opacity: 1; }
+
+  .nav-badge {
+    margin-left: auto; background: var(--blue); color: #fff;
+    font-size: 10px; font-weight: 700; padding: 2px 6px;
+    border-radius: 99px; line-height: 1.4;
+  }
+
+  .sidebar-footer {
+    margin-top: auto; padding: 12px 16px 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .model-badge {
+    background: var(--teal-dim); border: 1px solid rgba(29,233,182,.2);
+    border-radius: var(--radius-sm); padding: 8px 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .model-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--teal); flex-shrink: 0;
+    box-shadow: 0 0 6px var(--teal); animation: pulse 2s infinite; }
+
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.4; } }
+
+  .model-name { font-size: 11px; color: var(--teal); font-weight: 600; }
+  .model-type { font-size: 10px; color: var(--text3); }
+
+  /* ── MAIN ────────────────────────────────────────────────── */
+  .main {
+    margin-left: 220px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── TOPBAR ──────────────────────────────────────────────── */
+  .topbar {
+    height: 56px; padding: 0 28px;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 16px;
+    position: sticky; top: 0; z-index: 50;
+  }
+
+  .topbar-title { font-size: 15px; font-weight: 600; flex: 1; }
+  .topbar-title span { color: var(--text2); font-weight: 400; font-size: 13px; margin-left: 8px; }
+
+  .topbar-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 14px; border-radius: var(--radius-sm);
+    font-size: 12px; font-weight: 600; cursor: pointer;
+    border: 1px solid; transition: all .15s;
+  }
+
+  .btn-primary {
+    background: var(--blue); color: #fff; border-color: var(--blue);
+  }
+  .btn-primary:hover { filter: brightness(1.15); }
+
+  .btn-ghost {
+    background: transparent; color: var(--text2); border-color: var(--border2);
+  }
+  .btn-ghost:hover { background: var(--blue-dim); color: var(--text); border-color: var(--blue); }
+
+  /* ── PAGE ────────────────────────────────────────────────── */
+  .page { display: none; padding: 28px; flex: 1; }
+  .page.active { display: block !important; }
+
+  /* ── CARDS ───────────────────────────────────────────────── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+  }
+
+  .card-title {
+    font-size: 11px; letter-spacing: .8px; text-transform: uppercase;
+    color: var(--text3); margin-bottom: 12px; font-weight: 600;
+  }
+
+  /* ── STAT CARDS ──────────────────────────────────────────── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 2px;
+  }
+  .stat-card.blue::before { background: var(--blue); }
+  .stat-card.teal::before { background: var(--teal); }
+  .stat-card.amber::before { background: var(--amber); }
+  .stat-card.red::before { background: var(--red); }
+
+  .stat-label { font-size: 11px; color: var(--text3); letter-spacing: .5px; text-transform: uppercase; margin-bottom: 6px; }
+  .stat-value { font-size: 26px; font-weight: 700; letter-spacing: -1px; margin-bottom: 2px; }
+  .stat-card.blue .stat-value { color: var(--blue); }
+  .stat-card.teal .stat-value { color: var(--teal); }
+  .stat-card.amber .stat-value { color: var(--amber); }
+  .stat-card.red .stat-value { color: var(--red); }
+  .stat-sub { font-size: 11px; color: var(--text3); }
+
+  /* ── GRID LAYOUTS ────────────────────────────────────────── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+  
+  .grid-60-40 { 
+    display: grid !important; 
+    grid-template-columns: 6fr 4fr !important; 
+    gap: 20px; 
+    margin-bottom: 20px; 
+    width: 100%;
+    align-items: start;
+  }
+
+  /* ── TABLE ───────────────────────────────────────────────── */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .data-table th {
+    text-align: left; padding: 8px 12px;
+    color: var(--text3); font-weight: 600; letter-spacing: .5px;
+    border-bottom: 1px solid var(--border);
+    font-size: 10px; text-transform: uppercase;
+  }
+  .data-table td { padding: 9px 12px; border-bottom: 1px solid rgba(99,130,255,.06); }
+  .data-table tr:hover td { background: var(--blue-dim); }
+
+  /* ── BADGES ──────────────────────────────────────────────── */
+  .badge {
+    display: inline-flex; align-items: center;
+    padding: 2px 8px; border-radius: 99px;
+    font-size: 10px; font-weight: 700; letter-spacing: .3px;
+  }
+  .badge-blue { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(99,130,255,.3); }
+  .badge-teal { background: var(--teal-dim); color: var(--teal); border: 1px solid rgba(29,233,182,.3); }
+  .badge-amber { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(255,184,48,.3); }
+  .badge-red { background: var(--red-dim); color: var(--red); border: 1px solid rgba(255,77,106,.3); }
+  .badge-purple { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(167,139,250,.3); }
+
+  /* ── INPUTS ──────────────────────────────────────────────── */
+  .input-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+  .input-label { font-size: 11px; font-weight: 600; color: var(--text2); letter-spacing: .4px; }
+
+  input[type="text"], textarea, select {
+    background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius-sm);
+    color: var(--text); font-family: inherit; font-size: 13px; padding: 9px 14px; outline: none; width: 100%;
+  }
+  input[type="text"]:focus, textarea:focus, select:focus { border-color: var(--blue); }
+  textarea { resize: vertical; min-height: 80px; font-family: monospace; }
+
+  /* ── PROGRESS BAR ────────────────────────────────────────── */
+  .progress-bar { height: 4px; background: var(--bg3); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 2px; transition: width .4s ease; }
+
+  /* ── MODEL CARDS ─────────────────────────────────────────── */
+  .model-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(99,130,255,.06); }
+  .model-icon { width: 32px; height: 32px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; flex-shrink: 0; }
+  .model-info { flex: 1; }
+  .model-info-name { font-size: 12px; font-weight: 600; }
+  .model-info-meta { font-size: 11px; color: var(--text3); }
+
+  /* ── PIPELINE ────────────────────────────────────────────── */
+  .pipeline { display: flex; flex-direction: column; }
+  .step-row { display: flex; align-items: flex-start; gap: 16px; }
+  .step-line-col { display: flex; flex-direction: column; align-items: center; width: 28px; flex-shrink: 0; }
+  .step-dot { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+  .step-dot.done { background: var(--teal-dim); color: var(--teal); border: 1px solid rgba(29,233,182,.4); }
+  .step-dot.active { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(99,130,255,.5); }
+  .step-dot.wait { background: var(--bg3); color: var(--text3); border: 1px solid var(--border); }
+  .step-connector { width: 1px; flex: 1; min-height: 16px; background: var(--border); margin: 2px 0; }
+  .step-content { padding: 0 0 20px; flex: 1; }
+  .step-title { font-size: 13px; font-weight: 600; }
+  .step-meta { font-size: 11px; color: var(--text3); }
+
+  /* ── CANDIDATE CARD ──────────────────────────────────────── */
+  .candidate-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .candidate-card { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
+  .cand-id { font-size: 10px; color: var(--text3); letter-spacing: .5px; }
+  .cand-smiles { font-family: monospace; font-size: 10px; color: var(--text2); word-break: break-all; margin: 6px 0 10px; }
+  .cand-prop-row { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px; }
+
+  /* ── PROPERTY GAUGE ──────────────────────────────────────── */
+  .gauge-item { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+  .gauge-header { display: flex; justify-content: space-between; }
+  .gauge-name { font-size: 11px; font-weight: 600; }
+  .gauge-value { font-size: 13px; font-weight: 700; }
+
+  /* ── LIPINSKI TABLE ──────────────────────────────────────── */
+  .lipinski-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .lipo-row { display: flex; justify-content: space-between; padding: 7px 10px; border-radius: var(--radius-sm); background: var(--bg3); border: 1px solid var(--border); font-size: 11px; }
+  .lipo-ok { color: var(--teal); font-weight: 700; }
+  .lipo-fail { color: var(--red); font-weight: 700; }
+
+  /* ── SCATTER PLOT SVG ────────────────────────────────────── */
+  .chart-svg { width: 100%; height: auto; margin-top: 10px; }
+
+  .log-box { background: #060a14; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 16px; font-family: monospace; font-size: 11px; line-height: 1.6; max-height: 140px; overflow-y: auto; color: var(--text2); }
+  .log-line.info { color: var(--blue); }
+  .log-line.ok { color: var(--teal); }
+  .log-line.error { color: var(--red); }
+
+  .run-btn { width: 100%; padding: 12px; border-radius: var(--radius); background: linear-gradient(135deg, var(--blue), var(--purple)); color: #fff; font-size: 13px; font-weight: 700; border: none; cursor: pointer; margin-top: 4px; }
+  .run-btn:hover { filter: brightness(1.15); }
+
+  .notif { position: fixed; bottom: 24px; right: 24px; background: var(--card); border: 1px solid var(--border2); border-radius: var(--radius); padding: 14px 18px; font-size: 12px; z-index: 999; transform: translateY(80px); opacity: 0; transition: all .3s; }
+  .notif.show { transform: translateY(0); opacity: 1; }
+
+  .page-hero { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 28px; margin-bottom: 24px; }
+  .page-hero h1 { font-size: 22px; font-weight: 800; letter-spacing: -1px; }
+  .page-hero h1 span { color: var(--blue); }
+  .page-hero p { font-size: 13px; color: var(--text2); margin-top: 4px; }
+  .page-hero-meta { display: flex; gap: 16px; margin-top: 12px; }
+  .meta-chip { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text3); }
+  .meta-chip-dot { width: 6px; height: 6px; border-radius: 50%; }
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark"><div class="logo-hex">M</div><span class="logo-text">MolecularAI</span></div>
+    <div class="logo-sub">Drug Discovery</div>
+  </div>
+  <div class="nav-group">
+    <div class="nav-label">Platform</div>
+    <button class="nav-item active" onclick="showPage('dashboard', event)">◈ Dashboard</button>
+    <button class="nav-item" onclick="showPage('predict', event)">⬡ Predict Properties</button>
+    <button class="nav-item" onclick="showPage('generate', event)">✦ Generate Analogs</button>
+    <button class="nav-item" onclick="showPage('candidates', event)">◎ Top Candidates <span class="nav-badge" id="sidebar-badge-candidates">0</span></button>
+  </div>
+  <div class="nav-group" style="margin-top:12px">
+    <div class="nav-label">Models</div>
+    <button class="nav-item" onclick="showPage('models', event)">⬢ Model Registry</button>
+    <button class="nav-item" onclick="showPage('pipeline', event)">⟳ Pipeline</button>
+  </div>
+  <div class="sidebar-footer">
+    <div class="model-badge"><div class="model-dot"></div><div><div class="model-name">XGB + LGB + RF</div><div class="model-type">Active inference</div></div></div>
+  </div>
+</nav>
+
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-title"><span id="page-title">Dashboard</span> <span id="topbar-dataset-info">/ ZINC250k · 249,455 molecules</span></div>
+    <button class="topbar-btn btn-ghost" onclick="resetDashboardStats()">↺ Reload Dataset</button>
+    <button class="topbar-btn btn-primary" onclick="showPage('generate', event)">+ Generate Molecules</button>
+  </header>
+
+  <div class="page active" id="page-dashboard">
+    <div class="page-hero">
+      <h1>Génération & Optimisation de Molécules par <span>IA</span></h1>
+      <p>Pipeline complet — ZINC250k · Morgan Fingerprints · XGBoost · LightGBM · RandomForest</p>
+      <div class="page-hero-meta">
+        <div class="meta-chip"><div class="meta-chip-dot" style="background:var(--teal)"></div>Modèles entraînés</div>
+        <div class="meta-chip"><div class="meta-chip-dot" style="background:var(--blue)"></div>ZINC250k dataset</div>
+        <div class="meta-chip"><div class="meta-chip-dot" style="background:var(--amber)"></div>1024-bit Morgan FP</div>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card blue"><div class="stat-label">Molecules Analysed</div><div class="stat-value" id="dash-analyzed-count">249,455</div><div class="stat-sub">ZINC250k · cleaned</div></div>
+      <div class="stat-card teal"><div class="stat-label">Best R² Score</div><div class="stat-value">0.961</div><div class="stat-sub">logP · XGBoost</div></div>
+      <div class="stat-card amber"><div class="stat-label">Candidates Generated</div><div class="stat-value" id="dash-generated-count">0</div><div class="stat-sub">From MolMIM space</div></div>
+      <div class="stat-card red"><div class="stat-label">Drug-like Hits</div><div class="stat-value" id="dash-hits-count">0</div><div class="stat-sub">Lipinski pass</div></div>
+    </div>
+
+    <div class="grid-60-40">
+      <div class="card">
+        <div class="card-title">Model Performance — R² by Property</div>
+        <table class="data-table">
+          <thead>
+            <tr><th>Property</th><th>Best Model</th><th>R²</th><th>RMSE</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><span class="badge badge-blue">logP</span></td><td>XGBoost</td><td style="color:var(--teal);font-weight:700">0.961</td><td>0.312</td><td><span class="badge badge-teal">✓ Best</span></td></tr>
+            <tr><td><span class="badge badge-teal">QED</span></td><td>LightGBM</td><td style="color:var(--teal);font-weight:700">0.887</td><td>0.041</td><td><span class="badge badge-teal">✓ Best</span></td></tr>
+            <tr><td><span class="badge badge-amber">SAS</span></td><td>RandomForest</td><td style="color:var(--blue);font-weight:700">0.823</td><td>0.285</td><td><span class="badge badge-blue">Good</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Chemical Space (PCA View)</div>
+        <svg class="chart-svg" viewBox="0 0 300 160" id="pca-svg">
+          <line x1="30" y1="10" x2="30" y2="140" stroke="#1e2540"/>
+          <line x1="30" y1="140" x2="280" y2="140" stroke="#1e2540"/>
+          <circle cx="70" cy="50" r="3" fill="#6382ff" opacity="0.6"/>
+          <circle cx="120" cy="80" r="3" fill="#6382ff" opacity="0.6"/>
+          <circle cx="180" cy="40" r="3" fill="#6382ff" opacity="0.6"/>
+          <circle cx="230" cy="110" r="5" fill="#ff4d6a"/>
+          <text x="260" y="135" fill="#4a5578" font-size="9">PC1</text>
+          <text x="35" y="20" fill="#4a5578" font-size="9">PC2</text>
+          <g id="pca-dynamic-points"></g>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="page-predict">
+    <div class="page-hero"><h1>Predict <span>Properties</span></h1><p>Entrez un SMILES pour interroger vos modèles en arrière-plan.</p></div>
+    <div class="grid-60-40">
+      <div class="card">
+        <div class="card-title">SMILES Input</div>
+        <div class="input-group">
+          <label class="input-label">SMILES String</label>
+          <textarea id="smiles-input" placeholder="CC(=O)Oc1ccccc1C(=O)O"></textarea>
+        </div>
+        <div class="grid-2">
+          <div class="input-group">
+            <label class="input-label">Radius</label>
+            <select id="fp-radius"><option value="2">2 (Standard)</option><option value="3">3</option></select>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Bits</label>
+            <select id="fp-bits"><option value="1024">1024 bits</option><option value="2048">2048 bits</option></select>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button class="run-btn" onclick="runPrediction()">▶ Run Prediction</button>
+          <button class="topbar-btn btn-ghost" onclick="loadExample()">Load Example</button>
+        </div>
+        <div style="margin-top:16px;">
+          <div class="card-title">Prediction Log</div>
+          <div class="log-box" id="predict-log"><div class="log-line info">[INFO] System ready. Enter a SMILES to predict.</div></div>
+        </div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-title">Predicted Properties</div>
+          <div id="predict-results"><p style="color:var(--text3);text-align:center;padding:20px;">Results will appear here after calculation.</p></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Lipinski Rule of Five</div>
+          <div class="lipinski-grid" id="lipinski-check">
+            <div class="lipo-row"><span>MW ≤ 500</span><span style="color:var(--text3)">—</span></div>
+            <div class="lipo-row"><span>logP ≤ 5</span><span style="color:var(--text3)">—</span></div>
+            <div class="lipo-row"><span>HBD ≤ 5</span><span style="color:var(--text3)">—</span></div>
+            <div class="lipo-row"><span>HBA ≤ 10</span><span style="color:var(--text3)">—</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="page-generate">
+    <div class="page-hero"><h1>Generate <span>Analogs</span></h1><p>Exploration latente via l'architecture générative NVIDIA MolMIM.</p></div>
+    <div class="grid-60-40">
+      <div class="card">
+        <div class="card-title">Configuration</div>
+        <div class="input-group">
+          <label class="input-label">Seed SMILES</label>
+          <input type="text" id="seed-input" value="C[C@@H]1CC(Nc2cncc(-c3nncn3C)c2)C[C@@H](C)C1">
+        </div>
+        <button class="run-btn" onclick="runGenerativeWalk()">⚡ Run Generative Walk</button>
+        
+        <div style="margin-top:20px;">
+          <div class="card-title">Generation Log</div>
+          <div class="log-box" id="generate-log"><div class="log-line info">[INFO] Ready for latent walk exploration.</div></div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-title">Generated Lead Candidates</div>
+        <div class="candidate-grid" id="live-generation-container" style="grid-template-columns: 1fr; gap: 16px; max-height: 560px; overflow-y: auto; padding-right: 4px;">
+          <p style="color:var(--text3); text-align:center; padding:40px 10px;">Generated analogs will instantly render here in 2D layout.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="page-candidates">
+    <div class="page-hero"><h1>Top Lead <span>Candidates</span></h1><p>Molécules candidates prioritaires (qui passent Lipinski).</p></div>
+    <div class="candidate-grid" id="candidates-container" style="grid-template-columns: repeat(2, 1fr); gap:16px;">
+        <p style="color:var(--text3); grid-column: span 2; text-align:center; padding:40px;">Aucun candidat prioritaire enregistré pour le moment. Exécutez une prédiction ou une génération.</p>
+    </div>
+  </div>
+
+  <div class="page" id="page-models">
+    <div class="page-hero"><h1>Model <span>Registry</span></h1><p>Registre de vos algorithmes de Scoring.</p></div>
+    <div class="card">
+      <div class="model-row"><div class="model-icon" style="background:var(--blue-dim);color:var(--blue)">XG</div><div class="model-info"><div class="model-info-name">XGBoost Regressor (logP)</div><div class="model-info-meta">Fichier : models/best_xgb.pkl | R²: 0.961</div></div><span class="badge badge-teal">Active</span></div>
+      <div class="model-row"><div class="model-icon" style="background:var(--teal-dim);color:var(--teal)">LG</div><div class="model-info"><div class="model-info-name">LightGBM Regressor (QED)</div><div class="model-info-meta">Fichier : models/best_lgb.pkl | R²: 0.887</div></div><span class="badge badge-teal">Active</span></div>
+      <div class="model-row"><div class="model-icon" style="background:var(--amber-dim);color:var(--amber)">RF</div><div class="model-info"><div class="model-info-name">Random Forest Regressor (SAS)</div><div class="model-info-meta">Fichier : models/best_rf.pkl | R²: 0.823</div></div><span class="badge badge-teal">Active</span></div>
+    </div>
+  </div>
+
+  <div class="page" id="page-pipeline">
+    <div class="page-hero"><h1>Pipeline <span>Workflow</span></h1><p>Statut structurel du traitement.</p></div>
+    <div class="card">
+      <div class="pipeline">
+        <div class="step-row"><div class="step-line-col"><div class="step-dot done">✓</div><div class="step-connector"></div></div><div class="step-content"><div class="step-title">Dataset Cleaned</div><div class="step-meta">ZINC250k chargé.</div></div></div>
+        <div class="step-row"><div class="step-line-col"><div class="step-dot active">⟳</div></div><div class="step-content"><div class="step-title">Flask Live Interface</div><div class="step-meta">Connecté au port local 127.0.0.1:5000.</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="notif" id="sys-notif">✓ Notification</div>
+
+<script>
+  // ── GESTION DE L'ÉTAT CENTRALISÉ (DASHBOARD DYNAMIQUE) ──
+  const appState = {
+    totalAnalyzed: 249455,
+    generatedCount: 0,
+    drugLikeHitsCount: 0,
+    savedCandidates: [] // Contiendra les molécules coup de cœur (qui passent Lipinski)
+  };
+
+  // Fonction de mise à jour synchronisée du Dashboard et de la Sidebar
+  function updateDashboardUI() {
+    // 1. Mise à jour de la carte "Molecules Analysed" avec formatage de milliers
+    const analyzedEl = document.getElementById('dash-analyzed-count');
+    if (analyzedEl) {
+      analyzedEl.innerText = appState.totalAnalyzed.toLocaleString('fr-FR');
+    }
+
+    // 2. Mise à jour des candidats générés
+    const generatedEl = document.getElementById('dash-generated-count');
+    if (generatedEl) {
+      generatedEl.innerText = appState.generatedCount;
+    }
+
+    // 3. Mise à jour des hits Drug-Like
+    const hitsEl = document.getElementById('dash-hits-count');
+    if (hitsEl) {
+      hitsEl.innerText = appState.drugLikeHitsCount;
+    }
+
+    // 4. Mise à jour du badge dans la barre latérale
+    const sidebarBadge = document.getElementById('sidebar-badge-candidates');
+    if (sidebarBadge) {
+      sidebarBadge.innerText = appState.savedCandidates.length;
+    }
+
+    // 5. Actualiser la page dédiée "Top Candidates"
+    renderCandidatesPage();
+  }
+
+  // Permet de réinitialiser les compteurs d'activité via le bouton "Reload Dataset"
+  function resetDashboardStats() {
+    appState.totalAnalyzed = 249455;
+    appState.generatedCount = 0;
+    appState.drugLikeHitsCount = 0;
+    appState.savedCandidates = [];
+    
+    // Nettoyer le graphique PCA des points ajoutés
+    const pcaGroup = document.getElementById('pca-dynamic-points');
+    if (pcaGroup) pcaGroup.innerHTML = "";
+
+    updateDashboardUI();
+    showNotif("Statistiques réinitialisées au dataset initial ZINC ✓");
+  }
+
+  // Ajoute un point interactif sur la carte de l'espace chimique (PCA)
+  function addPointToPCASpace(logp, qed, isHit = false) {
+    const pcaGroup = document.getElementById('pca-dynamic-points');
+    if (!pcaGroup) return;
+
+    // Normalisation basique pour faire entrer logP et QED dans la boîte SVG (Width: 300, Height: 160)
+    // logP varie généralement entre -2 et 6 (Axe X) | QED varie entre 0 et 1 (Axe Y)
+    const xCoord = 30 + Math.min(Math.max((logp + 2) / 8, 0), 1) * 230;
+    const yCoord = 140 - Math.min(Math.max(qed, 0), 1) * 110;
+
+    const circleColor = isHit ? 'var(--teal)' : 'var(--blue)';
+    const circleRadius = isHit ? '5' : '4';
+
+    const newCircle = `<circle cx="${xCoord}" cy="${yCoord}" r="${circleRadius}" fill="${circleColor}" stroke="#fff" stroke-width="1" opacity="0.9"><title>logP: ${logp} | QED: ${qed}</title></circle>`;
+    pcaGroup.innerHTML += newCircle;
+  }
+
+  // Construit dynamiquement la vue de l'onglet "Top Candidates"
+  function renderCandidatesPage() {
+    const container = document.getElementById('candidates-container');
+    if (!container) return;
+
+    if (appState.savedCandidates.length === 0) {
+      container.innerHTML = `<p style="color:var(--text3); grid-column: span 2; text-align:center; padding:40px;">Aucun candidat prioritaire enregistré pour le moment. Exécutez une prédiction ou une génération.</p>`;
+      return;
+    }
+
+    container.innerHTML = "";
+    appState.savedCandidates.forEach(mol => {
+      const imgTag = mol.image 
+        ? `<img src="${mol.image}" style="max-height:100%; max-width:100%; object-fit:contain;"/>`
+        : `<span style="color:var(--text3); font-size:11px;">[2D N/A]</span>`;
+
+      container.innerHTML += `
+        <div class="candidate-card" style="border:1px solid var(--teal); background:var(--card); display:flex; flex-direction:column; gap:8px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="badge badge-teal" style="font-weight:700;">${mol.id}</span>
+            <span style="font-size:11px; opacity:0.6; font-family:monospace; max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${mol.smiles}</span>
+          </div>
+          <div style="background:#060a14; border-radius:var(--radius-sm); padding:10px; text-align:center; height:120px; display:flex; align-items:center; justify-content:center;">
+            ${imgTag}
+          </div>
+          <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:6px; text-align:center; font-size:11px;">
+            <div style="background:var(--bg3); padding:4px; border-radius:4px;">logP: <b style="color:var(--blue)">${mol.logp}</b></div>
+            <div style="background:var(--bg3); padding:4px; border-radius:4px;">QED: <b style="color:var(--teal)">${mol.qed}</b></div>
+            <div style="background:var(--bg3); padding:4px; border-radius:4px;">SAS: <b style="color:var(--amber)">${mol.sas}</b></div>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+
+  // ── LOGIQUE DES PAGES ET INTERFACES ──
+  function showPage(pageId, event) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    
+    document.getElementById('page-' + pageId).classList.add('active');
+    
+    if(event && event.currentTarget) {
+      event.currentTarget.classList.add('active');
+    }
+    document.getElementById('page-title').innerText = pageId.charAt(0).toUpperCase() + pageId.slice(1);
+  }
+
+  function showNotif(msg, isErr = false) {
+    const notif = document.getElementById('sys-notif');
+    notif.innerText = msg;
+    notif.className = 'notif show' + (isErr ? ' badge-red' : '');
+    setTimeout(() => notif.classList.remove('show'), 3000);
+  }
+
+  function loadExample() {
+    document.getElementById('smiles-input').value = "CC(=O)Oc1ccccc1C(=O)O";
+    showNotif("Exemple d'Aspirine chargé !");
+  }
+
+  function runPrediction() {
+    const smiles = document.getElementById('smiles-input').value.trim();
+    const radius = document.getElementById('fp-radius').value;
+    const bits = document.getElementById('fp-bits').value;
+    const logBox = document.getElementById('predict-log');
+    
+    if(!smiles) {
+      showNotif("Veuillez entrer un SMILES.", true);
+      return;
+    }
+
+    logBox.innerHTML += `<div class="log-line info">[PROCESS] Extraction du Morgan Fingerprint (${bits} bits)...</div>`;
+    logBox.innerHTML += `<div class="log-line info">[INFERENCE] Envoi au serveur Flask (127.0.0.1:5000)...</div>`;
+    logBox.scrollTop = logBox.scrollHeight;
+
+    fetch('http://127.0.0.1:5000/api/predict', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ smiles: smiles, radius: parseInt(radius), bits: parseInt(bits) })
+    })
+    .then(res => {
+      if (!res.ok) throw new Error("Erreur ou SMILES invalide.");
+      return res.json();
+    })
+    .then(data => {
+      const p = data.predictions;
+      const l = data.lipinski;
+
+      let imgHtml = '';
+      if (data.image) {
+         imgHtml = `<div style="background:#060a14;border-radius:var(--radius-sm);padding:10px;text-align:center;margin-bottom:12px;border:1px solid var(--border);"><img src="${data.image}" style="max-height:140px;max-width:100%;"/></div>`;
+      }
+
+      document.getElementById('predict-results').innerHTML = `
+        ${imgHtml}
+        <div class="gauge-item">
+          <div class="gauge-header"><span class="gauge-name">logP prédit (XGBoost)</span><span class="gauge-value" style="color:var(--blue)">${p.logp}</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${Math.min((Math.max(p.logp,0)/6)*100, 100)}%;background:var(--blue)"></div></div>
+        </div>
+        <div class="gauge-item">
+          <div class="gauge-header"><span class="gauge-name">Score QED prédit (LightGBM)</span><span class="gauge-value" style="color:var(--teal)">${p.qed}</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${p.qed * 100}%;background:var(--teal)}"></div></div>
+        </div>
+        <div class="gauge-item">
+          <div class="gauge-header"><span class="gauge-name">SAS prédit (RandomForest)</span><span class="gauge-value" style="color:var(--amber)">${p.sas}</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${(p.sas/10) * 100}%;background:var(--amber)"></div></div>
+        </div>
+      `;
+
+      document.getElementById('lipinski-check').innerHTML = `
+        <div class="lipo-row"><span>MW ≤ 500 (${l.mw} g/mol)</span><span class="${l.pass_mw ? 'lipo-ok' : 'lipo-fail'}">${l.pass_mw ? '✓ PASS' : '✕ FAIL'}</span></div>
+        <div class="lipo-row"><span>logP Réel ≤ 5 (${l.logp})</span><span class="${l.pass_logp ? 'lipo-ok' : 'lipo-fail'}">${l.pass_logp ? '✓ PASS' : '✕ FAIL'}</span></div>
+        <div class="lipo-row"><span>Donneurs H ≤ 5 (${l.hbd})</span><span class="${l.pass_hbd ? 'lipo-ok' : 'lipo-fail'}">${l.pass_hbd ? '✓ PASS' : '✕ FAIL'}</span></div>
+        <div class="lipo-row"><span>Accepteurs H ≤ 10 (${l.hba})</span><span class="${l.pass_hba ? 'lipo-ok' : 'lipo-fail'}">${l.pass_hba ? '✓ PASS' : '✕ FAIL'}</span></div>
+      `;
+
+      // ── INJECTER L'ACTIVITÉ DANS L'ÉTAT GLOBAL DYNAMIQUE ──
+      appState.totalAnalyzed += 1;
+      
+      const passesLipinski = l.pass_mw && l.pass_logp && l.pass_hbd && l.pass_hba;
+      if (passesLipinski) {
+        appState.drugLikeHitsCount += 1;
+        
+        // Sauvegarder dans le tableau s'il n'existe pas déjà
+        if(!appState.savedCandidates.some(m => m.smiles === smiles)) {
+            appState.savedCandidates.push({
+                id: `PRED-${appState.drugLikeHitsCount.toString().zfill(2)}`,
+                smiles: smiles, logp: p.logp, qed: p.qed, sas: p.sas, image: data.image
+            });
+        }
+      }
+
+      // Projection sur l'espace PCA
+      addPointToPCASpace(p.logp, p.qed, passesLipinski);
+      
+      // Actualiser le Dashboard
+      updateDashboardUI();
+
+      logBox.innerHTML += `<div class="log-line ok">[SUCCESS] Propriétés calculées avec succès et Dashboard synchronisé.</div>`;
+      logBox.scrollTop = logBox.scrollHeight;
+      showNotif("Analyse complétée !");
+    })
+    .catch(err => {
+      logBox.innerHTML += `<div class="log-line error">[ERROR] Interruption : ${err.message}</div>`;
+      logBox.scrollTop = logBox.scrollHeight;
+      showNotif("Échec de l'analyse", true);
+    });
+  }
+
+  // Extension utilitaire native pour simuler un zfill en JS
+  String.prototype.zfill = function(size) {
+    let s = this;
+    while (s.length < (size || 2)) { s = "0" + s; }
+    return s;
+  };
+
+  function runGenerativeWalk() {
+    const seedInput = document.getElementById('seed-input').value.trim();
+    const genLog = document.getElementById('generate-log');
+    const liveContainer = document.getElementById('live-generation-container');
+
+    if (!seedInput) {
+      showNotif("Veuillez spécifier un SMILES graine.", true);
+      return;
+    }
+
+    genLog.innerHTML += `<div class="log-line info">[PROCESS] Initialisation du vecteur latent NVIDIA MolMIM...</div>`;
+    genLog.innerHTML += `<div class="log-line info">[INFERENCE] Début de la marche d'exploration latente...</div>`;
+    genLog.scrollTop = genLog.scrollHeight;
+    showNotif("Génération MolMIM démarrée !");
+
+    fetch('http://127.0.0.1:5000/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ smiles: seedInput })
+    })
+    .then(res => {
+      if (!res.ok) throw new Error("Erreur de communication avec l'espace latent.");
+      return res.json();
+    })
+    .then(data => {
+      if (data.candidates && data.candidates.length > 0) {
+        liveContainer.innerHTML = ""; 
+
+        // Incrémenter le compteur de génération global
+        appState.generatedCount += data.candidates.length;
+
+        data.candidates.forEach(mol => {
+          const imageTag = mol.image 
+            ? `<img src="${mol.image}" style="max-height:100%; max-width:100%; object-fit:contain; filter:drop-shadow(0px 2px 4px rgba(0,0,0,0.5));"/>` 
+            : `<span style="color:var(--text3); font-family:monospace; font-size:11px;">[ Structure 2D Indisponible ]</span>`;
+
+          liveContainer.innerHTML += `
+            <div class="candidate-card" style="margin-bottom:12px; border: 1px solid var(--border2); background:var(--card); display:flex; flex-direction:column; gap:8px;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span class="cand-id" style="color:var(--blue); font-weight:700;">${mol.id}</span>
+                <span class="cand-smiles" style="margin:0; max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:11px; opacity:0.8;">${mol.smiles}</span>
+              </div>
+              
+              <div style="background:#060a14; border-radius:var(--radius-sm); padding:12px; text-align:center; height:150px; min-height:150px; display:flex; align-items:center; justify-content:center; border:1px solid rgba(99,130,255,0.08);">
+                ${imageTag}
+              </div>
+
+              <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; text-align:center; font-size:11px; margin-top:4px;">
+                <div style="background:var(--bg3); padding:6px; border-radius:4px;">LogP: <b style="color:var(--blue)">${mol.logp}</b></div>
+                <div style="background:var(--bg3); padding:6px; border-radius:4px;">QED: <b style="color:var(--teal)">${mol.qed}</b></div>
+                <div style="background:var(--bg3); padding:6px; border-radius:4px;">SAS: <b style="color:var(--amber)">${mol.sas}</b></div>
+              </div>
+            </div>
+          `;
+
+          // Filtrage intelligent : si le QED > 0.45 et SAS < 4.5, on considère cela comme un hit Drug-like
+          const isGenHit = mol.qed >= 0.45 && mol.sas <= 4.5;
+          if (isGenHit) {
+             appState.drugLikeHitsCount += 1;
+             appState.savedCandidates.push(mol);
+          }
+
+          // Ajouter chaque structure générée sur le graphique de l'espace chimique
+          addPointToPCASpace(mol.logp, mol.qed, isGenHit);
+        });
+
+        // Actualiser l'affichage complet du Dashboard
+        updateDashboardUI();
+
+        genLog.innerHTML += `<div class="log-line ok">[SUCCESS] Exploration terminée. ${data.candidates.length} analogues injectés dans le Dashboard.</div>`;
+        genLog.scrollTop = genLog.scrollHeight;
+        showNotif("Lead Candidates mis à jour !");
+      }
+    })
+    .catch(err => {
+      genLog.innerHTML += `<div class="log-line error">[ERROR] Interruption : ${err.message}</div>`;
+      genLog.scrollTop = genLog.scrollHeight;
+      showNotif("Échec de la génération", true);
+    });
+  }
+</script>
+</body>
+</html>
