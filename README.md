@@ -25,7 +25,7 @@ An intuitive web dashboard was developed to allow real-time molecular analysis f
 The prediction page enables users to input a SMILES molecule, extract Morgan fingerprints, and instantly predict three important molecular properties (**logP**, **QED**, and **SAS**) while evaluating the Lipinski Rule of Five.
 
 <p align="center">
-  <img src="images/dashboard_prediction.png" width="900">
+  <img src="images/imagesdashboard_prediction.png" width="900">
 </p>
 
 ---
